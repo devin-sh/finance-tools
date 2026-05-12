@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Tools</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; }
+    header { background: linear-gradient(135deg, #1a3c5e, #2d6a9f); color: white; padding: 30px 20px; text-align: center; }
+    header h1 { font-size: 2.2rem; margin-bottom: 8px; }
+    header p { font-size: 1rem; opacity: 0.85; }
+    nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; padding: 20px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    nav button { padding: 8px 18px; border: 2px solid #2d6a9f; border-radius: 20px; background: white; color: #2d6a9f; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    nav button:hover, nav button.active { background: #2d6a9f; color: white; }
+    main { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+    .tool { display: none; background: white; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    .tool.active { display: block; }
+    h2 { color: #1a3c5e; font-size: 1.5rem; margin-bottom: 8px; }
+    .tool-desc { color: #666; margin-bottom: 24px; font-size: 0.95rem; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 20px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 0.9rem; }
+    input[type=number], input[type=text], select { width: 100%; padding: 10px 14px; border: 1.5px solid #ccd9e8; border-radius: 8px; font-size: 1rem; transition: border 0.2s; }
+    input:focus, select:focus { outline: none; border-color: #2d6a9f; }
+    .btn { background: linear-gradient(135deg, #2d6a9f, #1a3c5e); color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 10px; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.88; }
+    .result { background: #e8f1fb; border-left: 4px solid #2d6a9f; border-radius: 8px; padding: 18px 22px; margin-top: 20px; display: none; }
+    .result.show { display: block; }
+    .result h3 { color: #1a3c5e; margin-bottom: 12px; }
+    .result-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #c9d9ee; font-size: 0.95rem; }
+    .result-row:last-child { border-bottom: none; font-weight: 700; color: #1a3c5e; }
+    .result-val { font-weight: 600; }
+    footer { text-align: center; padding: 30px 20px; color: #888; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Finance Tools</h1>
+    <p>Simple calculators to help you plan your financial future</p>
+  </header>
+  <nav>
+    <button class="active" onclick="showTool('loan', this)">Loan Calculator</button>
+    <button onclick="showTool('compound', this)">Compound Interest</button>
+    <button onclick="showTool('savings', this)">Savings Goal</button>
+    <button onclick="showTool('mortgage', this)">Mortgage Calculator</button>
+    <button onclick="showTool('roi', this)">ROI Calculator</button>
+  </nav>
+  <main>
+    <div id="loan" class="tool active">
+      <h2>Loan Calculator</h2>
+      <p class="tool-desc">Calculate your monthly payment and total interest for any loan.</p>
+      <div class="form-grid">
+        <div><label>Loan Amount ($)</label><input type="number" id="loan-amount" placeholder="e.g. 20000" min="0"></div>
+        <div><label>Annual Interest Rate (%)</label><input type="number" id="loan-rate" placeholder="e.g. 5.5" step="0.01" min="0"></div>
+        <div><label>Loan Term (years)</label><input type="number" id="loan-term" placeholder="e.g. 5" min="1"></div>
+      </div>
+      <button class="btn" onclick="calcLoan()">Calculate</button>
+      <div class="result" id="loan-result">
+        <h3>Results</h3>
+        <div class="result-row"><span>Monthly Payment</span><span class="result-val" id="loan-monthly"></span></div>
+        <div class="result-row"><span>Total Payment</span><span class="result-val" id="loan-total"></span></div>
+        <div class="result-row"><span>Total Interest Paid</span><span class="result-val" id="loan-interest"></span></div>
+      </div>
+    </div>
+    <div id="compound" class="tool">
+      <h2>Compound Interest Calculator</h2>
+      <p class="tool-desc">See how your investment grows over time with compound interest.</p>
+      <div class="form-grid">
+        <div><label>Principal Amount ($)</label><input type="number" id="ci-principal" placeholder="e.g. 10000" min="0"></div>
+        <div><label>Annual Interest Rate (%)</label><input type="number" id="ci-rate" placeholder="e.g. 7" step="0.01" min="0"></div>
+        <div><label>Years</label><input type="number" id="ci-years" placeholder="e.g. 10" min="1"></div>
+        <div><label>Compound Frequency</label>
+          <select id="ci-freq">
+            <option value="1">Annually</option>
+            <option value="2">Semi-Annually</option>
+            <option value="4">Quarterly</option>
+            <option value="12" selected>Monthly</option>
+            <option value="365">Daily</option>
+          </select>
+        </div>
+        <div><label>Monthly Contribution ($)</label><input type="number" id="ci-contrib" placeholder="e.g. 200" min="0" value="0"></div>
+      </div>
+      <button class="btn" onclick="calcCompound()">Calculate</button>
+      <div class="result" id="compound-result">
+        <h3>Results</h3>
+        <div class="result-row"><span>Future Value</span><span class="result-val" id="ci-future"></span></div>
+        <div class="result-row"><span>Total Contributed</span><span class="result-val" id="ci-contributed"></span></div>
+        <div class="result-row"><span>Total Interest Earned</span><span class="result-val" id="ci-earned"></span></div>
+      </div>
+    </div>
+    <div id="savings" class="tool">
+      <h2>Savings Goal Calculator</h2>
+      <p class="tool-desc">Find out how much you need to save each month to reach your goal.</p>
+      <div class="form-grid">
+        <div><label>Savings Goal ($)</label><input type="number" id="sg-goal" placeholder="e.g. 50000" min="0"></div>
+        <div><label>Current Savings ($)</label><input type="number" id="sg-current" placeholder="e.g. 5000" min="0" value="0"></div>
+        <div><label>Annual Interest Rate (%)</label><input type="number" id="sg-rate" placeholder="e.g. 4" step="0.01" min="0"></div>
+        <div><label>Years to Goal</label><input type="number" id="sg-years" placeholder="e.g. 5" min="1"></div>
+      </div>
+      <button class="btn" onclick="calcSavings()">Calculate</button>
+      <div class="result" id="savings-result">
+        <h3>Results</h3>
+        <div class="result-row"><span>Monthly Savings Needed</span><span class="result-val" id="sg-monthly"></span></div>
+        <div class="result-row"><span>Total You Will Save</span><span class="result-val" id="sg-total-save"></span></div>
+        <div class="result-row"><span>Interest Earned</span><span class="result-val" id="sg-interest"></span></div>
+      </div>
+    </div>
+    <div id="mortgage" class="tool">
+      <h2>Mortgage Calculator</h2>
+      <p class="tool-desc">Estimate your monthly mortgage payment including taxes and insurance.</p>
+      <div class="form-grid">
+        <div><label>Home Price ($)</label><input type="number" id="m-price" placeholder="e.g. 350000" min="0"></div>
+        <div><label>Down Payment ($)</label><input type="number" id="m-down" placeholder="e.g. 70000" min="0"></div>
+        <div><label>Annual Interest Rate (%)</label><input type="number" id="m-rate" placeholder="e.g. 6.5" step="0.01" min="0"></div>
+        <div><label>Loan Term (years)</label>
+          <select id="m-term">
+            <option value="10">10 Years</option>
+            <option value="15">15 Years</option>
+            <option value="20">20 Years</option>
+            <option value="30" selected>30 Years</option>
+          </select>
+        </div>
+        <div><label>Annual Property Tax ($)</label><input type="number" id="m-tax" placeholder="e.g. 3500" min="0" value="0"></div>
+        <div><label>Annual Home Insurance ($)</label><input type="number" id="m-ins" placeholder="e.g. 1200" min="0" value="0"></div>
+      </div>
+      <button class="btn" onclick="calcMortgage()">Calculate</button>
+      <div class="result" id="mortgage-result">
+        <h3>Monthly Payment Breakdown</h3>
+        <div class="result-row"><span>Principal and Interest</span><span class="result-val" id="m-pi"></span></div>
+        <div class="result-row"><span>Property Tax</span><span class="result-val" id="m-tax-mo"></span></div>
+        <div class="result-row"><span>Home Insurance</span><span class="result-val" id="m-ins-mo"></span></div>
+        <div class="result-row"><span>Total Monthly Payment</span><span class="result-val" id="m-total"></span></div>
+        <div class="result-row"><span>Total Cost of Loan</span><span class="result-val" id="m-total-cost"></span></div>
+      </div>
+    </div>
+    <div id="roi" class="tool">
+      <h2>ROI Calculator</h2>
+      <p class="tool-desc">Calculate the return on investment for any project or investment.</p>
+      <div class="form-grid">
+        <div><label>Initial Investment ($)</label><input type="number" id="roi-cost" placeholder="e.g. 10000" min="0"></div>
+        <div><label>Final Value or Return ($)</label><input type="number" id="roi-return" placeholder="e.g. 15000" min="0"></div>
+        <div><label>Investment Period (years)</label><input type="number" id="roi-years" placeholder="e.g. 3" step="0.5" min="0.1"></div>
+      </div>
+      <button class="btn" onclick="calcROI()">Calculate</button>
+      <div class="result" id="roi-result">
+        <h3>Results</h3>
+        <div class="result-row"><span>Net Profit or Loss</span><span class="result-val" id="roi-net"></span></div>
+        <div class="result-row"><span>Total ROI</span><span class="result-val" id="roi-pct"></span></div>
+        <div class="result-row"><span>Annualized ROI</span><span class="result-val" id="roi-annual"></span></div>
+      </div>
+    </div>
+  </main>
+  <footer><p>Finance Tools - For informational purposes only. Consult a financial advisor for professional advice.</p></footer>
+  <script>
+    function fmt(n) { return '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+    function showTool(id, btn) {
+      document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+    function calcLoan() {
+      var P = parseFloat(document.getElementById('loan-amount').value);
+      var r = parseFloat(document.getElementById('loan-rate').value) / 100 / 12;
+      var n = parseFloat(document.getElementById('loan-term').value) * 12;
+      if (!P || !r || !n) return alert('Please fill in all fields.');
+      var M = P * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+      var total = M * n;
+      document.getElementById('loan-monthly').textContent = fmt(M);
+      document.getElementById('loan-total').textContent = fmt(total);
+      document.getElementById('loan-interest').textContent = fmt(total - P);
+      document.getElementById('loan-result').classList.add('show');
+    }
+    function calcCompound() {
+      var P = parseFloat(document.getElementById('ci-principal').value) || 0;
+      var r = parseFloat(document.getElementById('ci-rate').value) / 100;
+      var t = parseFloat(document.getElementById('ci-years').value);
+      var n = parseFloat(document.getElementById('ci-freq').value);
+      var m = parseFloat(document.getElementById('ci-contrib').value) || 0;
+      if (!r || !t) return alert('Please fill in all required fields.');
+      var FV_p = P * Math.pow(1 + r/n, n*t);
+      var FV_c = r > 0 ? m * (Math.pow(1 + r/n, n*t) - 1) / (r/n) : m * n * t;
+      var future = FV_p + FV_c;
+      var contributed = P + m * 12 * t;
+      document.getElementById('ci-future').textContent = fmt(future);
+      document.getElementById('ci-contributed').textContent = fmt(contributed);
+      document.getElementById('ci-earned').textContent = fmt(future - contributed);
+      document.getElementById('compound-result').classList.add('show');
+    }
+    function calcSavings() {
+      var goal = parseFloat(document.getElementById('sg-goal').value);
+      var current = parseFloat(document.getElementById('sg-current').value) || 0;
+      var r = parseFloat(document.getElementById('sg-rate').value) / 100 / 12;
+      var n = parseFloat(document.getElementById('sg-years').value) * 12;
+      if (!goal || !n) return alert('Please fill in all required fields.');
+      var currentFV = current * Math.pow(1 + r, n);
+      var remaining = goal - currentFV;
+      var monthly = r > 0 ? remaining * r / (Math.pow(1 + r, n) - 1) : remaining / n;
+      var totalSave = monthly * n + current;
+      document.getElementById('sg-monthly').textContent = fmt(Math.max(0, monthly));
+      document.getElementById('sg-total-save').textContent = fmt(totalSave);
+      document.getElementById('sg-interest').textContent = fmt(goal - totalSave);
+      document.getElementById('savings-result').classList.add('show');
+    }
+    function calcMortgage() {
+      var price = parseFloat(document.getElementById('m-price').value);
+      var down = parseFloat(document.getElementById('m-down').value) || 0;
+      var r = parseFloat(document.getElementById('m-rate').value) / 100 / 12;
+      var n = parseFloat(document.getElementById('m-term').value) * 12;
+      var tax = (parseFloat(document.getElementById('m-tax').value) || 0) / 12;
+      var ins = (parseFloat(document.getElementById('m-ins').value) || 0) / 12;
+      if (!price || !r || !n) return alert('Please fill in all required fields.');
+      var P = price - down;
+      var M = P * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+      var total = M + tax + ins;
+      document.getElementById('m-pi').textContent = fmt(M);
+      document.getElementById('m-tax-mo').textContent = fmt(tax);
+      document.getElementById('m-ins-mo').textContent = fmt(ins);
+      document.getElementById('m-total').textContent = fmt(total);
+      document.getElementById('m-total-cost').textContent = fmt(M * n + tax * n + ins * n);
+      document.getElementById('mortgage-result').classList.add('show');
+    }
+    function calcROI() {
+      var cost = parseFloat(document.getElementById('roi-cost').value);
+      var ret = parseFloat(document.getElementById('roi-return').value);
+      var yrs = parseFloat(document.getElementById('roi-years').value);
+      if (!cost || !ret || !yrs) return alert('Please fill in all fields.');
+      var net = ret - cost;
+      var pct = (net / cost) * 100;
+      var annual = (Math.pow(ret / cost, 1 / yrs) - 1) * 100;
+      document.getElementById('roi-net').textContent = fmt(net);
+      document.getElementById('roi-pct').textContent = pct.toFixed(2) + '%';
+      document.getElementById('roi-annual').textContent = annual.toFixed(2) + '%';
+      document.getElementById('roi-result').classList.add('show');
+    }
+  </script>
+</body>
+</html>
